@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#000000">
+<title>Accueil — Hygiène de vie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#000000;
+    --surface:#151517;
+    --surface-2:#1E1F22;
+    --border: rgba(255,255,255,0.09);
+    --ink:#F5F6F7;
+    --muted:#8B8D96;
+    --accent:#3DFF7A;
+    --accent-soft: rgba(61,255,122,0.12);
+    --on-accent:#04140B;
+    --accent-2:#FFD23D;
+    --cyan:#33E1FF;
+    --magenta:#FF3DA6;
+    --good:#3DFF7A;
+    --bad:#FF4D6D;
+    --radius: 18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+  }
+  #app{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    padding-bottom:88px;
+  }
+  header.top{
+    padding:28px 20px 16px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--border);
+  }
+  header.top .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--accent);
+  }
+  header.top h1{
+    font-family:'Inter',sans-serif;
+    font-weight:800;
+    letter-spacing:-0.01em;
+    font-size:23px;
+    margin:4px 0 0;
+    color:var(--ink);
+  }
+  header.top .date{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--muted);
+    text-align:right;
+    text-transform:capitalize;
+  }
+  main{flex:1;padding:20px;}
+  .page{display:none;}
+  .page.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:20px;
+    margin-bottom:16px;
+  }
+  .card h2{
+    font-family:'Inter',sans-serif;
+    font-weight:800;
+    letter-spacing:-0.01em;
+    font-size:18px;
+    margin:0 0 14px;
+    color:var(--ink);
+  }
+  .card h3{
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    margin:0;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .card-link{cursor:pointer;}
+  label{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:6px;
+    font-family:'IBM Plex Mono',monospace;
+    letter-spacing:.02em;
+  }
+  input[type=number], select{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:16px;
+    padding:12px 14px;
+    border-radius:12px;
+    margin-bottom:14px;
+    -webkit-appearance:none;
+  }
+  input:focus, select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .field-row{display:flex;gap:10px;}
+  .field-row > div{flex:1;}
+  .sex-toggle{display:flex;gap:8px;margin-bottom:14px;}
+  .sex-toggle button{
+    flex:1;padding:10px;border-radius:12px;border:1px solid var(--border);
+    background:var(--surface-2);color:var(--muted);font-family:'Inter';font-size:14px;
+  }
+  .sex-toggle button.selected{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+
+  button.primary{
+    width:100%;
+    background:var(--accent);
+    color:var(--on-accent);
+    border:none;
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    padding:14px;
+    border-radius:12px;
+  }
+  .stat-line{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--border);}
+  .stat-line:last-child{border-bottom:none;}
+  .stat-line .label{font-size:13px;color:var(--muted);}
+  .stat-line .value{font-family:'IBM Plex Mono',monospace;font-size:15px;}
+  .value.good{color:var(--good);}
+  .value.bad{color:var(--bad);}
+
+  .subnav, .metric-tabs, .range-tabs{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;}
+  .subnav button, .metric-tabs button, .range-tabs button{
+    white-space:nowrap;
+    padding:8px 14px;border-radius:999px;border:1px solid var(--border);
+    background:transparent;color:var(--muted);font-family:'Inter';font-size:13px;
+  }
+  .subnav button.selected, .metric-tabs button.selected, .range-tabs button.selected{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:700;}
+
+  nav.bottom{
+    position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+    width:100%;max-width:480px;
+    background:rgba(10,10,11,0.86);
+    backdrop-filter:blur(14px);
+    border-top:1px solid var(--border);
+    display:flex;
+    padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+  }
+  nav.bottom button{
+    flex:1;background:none;border:none;color:var(--muted);
+    display:flex;flex-direction:column;align-items:center;gap:5px;
+    font-family:'Inter';font-size:11px;padding:6px 0;
+  }
+  nav.bottom button svg{width:21px;height:21px;stroke:var(--muted);}
+  nav.bottom button.active{color:var(--accent);}
+  nav.bottom button.active svg{stroke:var(--accent);filter:drop-shadow(0 0 6px rgba(61,255,122,0.55));}
+
+  .icon{stroke:var(--ink);}
+  .icon-sm{width:19px;height:19px;flex-shrink:0;}
+  .icon-accent{stroke:var(--accent);}
+  .icon-magenta{stroke:var(--magenta);}
+  .icon-amber{stroke:var(--accent-2);}
+
+  /* ---- Accueil : cartes façon app fitness ---- */
+  .home-card-title{font-family:'Inter',sans-serif;font-weight:800;letter-spacing:-0.01em;font-size:19px;margin:0;}
+  .home-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:2px 0 0;}
+
+  .home-rings-card{
+    padding:22px;
+    background:radial-gradient(130% 130% at 100% 0%, rgba(61,255,122,0.14), transparent 60%);
+    border-color:rgba(61,255,122,0.22);
+  }
+  .home-rings-row{display:flex;align-items:center;gap:22px;margin-top:16px;}
+  .ring-wrap-lg{flex-shrink:0;}
+  .ring-wrap-lg svg{width:128px;height:128px;display:block;}
+  .home-stat-list{flex:1;display:flex;flex-direction:column;gap:16px;}
+  .home-stat-item{display:flex;align-items:flex-start;gap:10px;}
+  .home-stat-item .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:6px;}
+  .hsi-label{display:block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .hsi-value{display:block;font-family:'Inter',sans-serif;font-weight:800;font-size:20px;margin-top:3px;letter-spacing:-0.01em;}
+
+  .home-badge-card{padding:20px 20px;margin-bottom:16px;}
+  .home-badge-card.prayer{background:radial-gradient(130% 170% at 100% 0%, rgba(255,61,166,0.16), transparent 60%);border-color:rgba(255,61,166,0.26);}
+  .home-badge-card.news{background:radial-gradient(130% 170% at 100% 0%, rgba(255,210,61,0.16), transparent 60%);border-color:rgba(255,210,61,0.26);}
+  .home-badge-row{display:flex;align-items:center;gap:18px;}
+  .ring-badge svg{width:100px;height:100px;flex-shrink:0;display:block;}
+  .home-badge-sub{font-family:'Inter',sans-serif;font-size:12.5px;color:var(--muted);margin:5px 0 0;}
+
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .cal-dow{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);text-align:center;padding-bottom:4px;}
+  .cal-day{
+    aspect-ratio:1;border-radius:10px;background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);
+    position:relative;border:1px solid transparent;
+  }
+  .cal-day.empty{background:none;}
+  .cal-day.filled{color:var(--ink);}
+  .cal-day.good{border-color:var(--good);}
+  .cal-day.bad{border-color:var(--bad);}
+  .cal-day.today{outline:1.5px solid var(--accent);}
+  .cal-month-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .cal-month-nav button{background:var(--surface-2);border:1px solid var(--border);color:var(--ink);border-radius:8px;padding:6px 12px;display:flex;align-items:center;}
+  .cal-month-nav .month-label{font-family:'Inter',sans-serif;font-weight:700;font-size:15px;text-transform:capitalize;}
+
+  .chart-wrap{position:relative;}
+  #trendChart{width:100%;height:150px;display:block;}
+  .chart-labels{position:relative;height:16px;margin-top:2px;}
+  .chart-labels span{position:absolute;transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
+
+  .stepper{display:flex;align-items:center;justify-content:center;gap:22px;padding:10px 0 4px;}
+  .stepper button{
+    width:48px;height:48px;border-radius:50%;border:1px solid var(--border);
+    background:var(--surface-2);color:var(--ink);font-size:22px;
+  }
+  .stepper .count{font-family:'Inter',sans-serif;font-weight:800;font-size:40px;min-width:70px;text-align:center;}
+  .stepper .count .goal{font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--muted);}
+
+  .check-item{
+    display:flex;align-items:center;gap:14px;padding:14px;
+    background:var(--surface-2);border-radius:12px;margin-bottom:10px;border:1px solid var(--border);
+  }
+  .check-item.done{border-color:var(--good);background:rgba(61,255,122,0.08);}
+  .check-box{width:24px;height:24px;border-radius:7px;border:1.5px solid var(--muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .check-item.done .check-box{background:var(--good);border-color:var(--good);}
+  .check-item .txt{font-size:14px;font-weight:500;}
+  .check-item .sub{font-size:11px;color:var(--muted);}
+
+  .empty-hint{color:var(--muted);font-size:13px;line-height:1.5;}
+
+  .modal-backdrop{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);
+    align-items:flex-end;justify-content:center;z-index:50;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    background:var(--surface);width:100%;max-width:480px;border-radius:20px 20px 0 0;
+    padding:22px 20px calc(22px + env(safe-area-inset-bottom));border:1px solid var(--border);border-bottom:none;
+  }
+  .modal h3{font-family:'Inter',sans-serif;font-weight:800;margin:0 0 14px;text-transform:capitalize;}
+  .modal .close{background:var(--surface-2);border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:10px;width:100%;margin-top:10px;font-family:'Inter';}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="top">
+    <div>
+      <div class="eyebrow" id="pageEyebrow">Accueil</div>
+      <h1 id="pageTitle">Aujourd'hui</h1>
+    </div>
+    <div class="date" id="topDate"></div>
+  </header>
+
+  <main>
+
+    <!-- ACCUEIL -->
+    <section class="page active" id="page-home">
+      <div class="card card-link home-rings-card" onclick="goTo('health','today')">
+        <h3 class="home-card-title"><svg class="icon icon-sm icon-accent" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg>Santé</h3>
+        <div class="home-rings-row">
+          <div class="ring-wrap-lg"><svg id="healthDualRing" viewBox="0 0 140 140"></svg></div>
+          <div class="home-stat-list">
+            <div class="home-stat-item">
+              <span class="dot" style="background:var(--accent)"></span>
+              <div><span class="hsi-label">Déficit du jour</span><span class="hsi-value" id="homeDeficit" style="color:var(--accent)">—</span></div>
+            </div>
+            <div class="home-stat-item">
+              <span class="dot" style="background:var(--cyan)"></span>
+              <div><span class="hsi-label">Protéines</span><span class="hsi-value" id="homeProtein" style="color:var(--cyan)">—</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="empty-hint" id="homeHint" style="margin-top:14px;">Renseigne ton profil pour commencer.</p>
+      </div>
+
+      <div class="card card-link home-badge-card prayer" onclick="goTo('prayer')">
+        <div class="home-badge-row">
+          <div class="ring-badge"><svg id="prayerRing" viewBox="0 0 120 120"></svg></div>
+          <div>
+            <h3 class="home-card-title"><svg class="icon icon-sm icon-magenta" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3.5a8 8 0 100 17 6.3 6.3 0 010-17z"/></svg>Prière</h3>
+            <p class="home-badge-sub">Objectif : 5 prières / jour</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-link home-badge-card news" onclick="goTo('news')">
+        <div class="home-badge-row">
+          <div class="ring-badge"><svg id="newsRing" viewBox="0 0 120 120"></svg></div>
+          <div>
+            <h3 class="home-card-title"><svg class="icon icon-sm icon-amber" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="13" height="14" rx="1.2"/><path d="M16.5 8h4v8.5a2.2 2.2 0 01-2.2 2.2H16.5"/><path d="M6.5 9h7M6.5 12h7M6.5 15h4.5"/></svg>News</h3>
+            <p class="home-badge-sub">Actus du jour + Brief FT</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SANTE -->
+    <section class="page" id="page-health">
+      <div class="subnav">
+        <button data-sub="today" class="selected">Aujourd'hui</button>
+        <button data-sub="profile">Profil</button>
+        <button data-sub="calendar">Évolution</button>
+      </div>
+
+      <div id="health-today">
+        <div class="card">
+          <h2>Saisie du jour</h2>
+          <label>Calories ingérées (kcal)</label>
+          <input type="number" id="in_caloriesIn" placeholder="ex: 1800" inputmode="numeric">
+          <label>Calories brûlées en plus — sport (optionnel)</label>
+          <input type="number" id="in_caloriesBurned" placeholder="ex: 300" inputmode="numeric">
+          <label>Protéines consommées (g)</label>
+          <input type="number" id="in_protein" placeholder="ex: 120" inputmode="numeric">
+          <label>Poids du jour (kg) — optionnel, 1x/semaine</label>
+          <input type="number" id="in_weight" placeholder="ex: 78.4" inputmode="decimal" step="0.1">
+          <button class="primary" onclick="saveToday()">Enregistrer</button>
+        </div>
+
+        <div class="card">
+          <h2>Bilan du jour</h2>
+          <div class="stat-line"><span class="label">Dépense totale</span><span class="value" id="calcTotalBurn">—</span></div>
+          <div class="stat-line"><span class="label">Déficit / Objectif</span><span class="value" id="calcDeficit">—</span></div>
+          <div class="stat-line"><span class="label">Protéines / objectif</span><span class="value" id="calcProtein">—</span></div>
+        </div>
+      </div>
+
+      <div id="health-profile" style="display:none;">
+        <div class="card">
+          <h2>Ton profil</h2>
+          <div class="field-row">
+            <div><label>Poids (kg)</label><input type="number" id="p_weight" step="0.1"></div>
+            <div><label>Taille (cm)</label><input type="number" id="p_height"></div>
+          </div>
+          <div class="field-row">
+            <div><label>Âge</label><input type="number" id="p_age"></div>
+            <div><label>Sexe</label>
+              <div class="sex-toggle">
+                <button type="button" data-sex="H" onclick="setSex('H')">Homme</button>
+                <button type="button" data-sex="F" onclick="setSex('F')">Femme</button>
+              </div>
+            </div>
+          </div>
+          <label>Objectif de déficit calorique / jour (kcal)</label>
+          <input type="number" id="p_deficitGoal" placeholder="ex: 500">
+          <label>Objectif de protéines / jour (g)</label>
+          <input type="number" id="p_proteinGoal" placeholder="ex: 130">
+          <button class="primary" onclick="saveProfile()">Enregistrer le profil</button>
+        </div>
+      </div>
+
+      <div id="health-calendar" style="display:none;">
+        <div class="card">
+          <div class="range-tabs" style="margin-bottom:14px;">
+            <button data-range="week" class="selected">Semaine</button>
+            <button data-range="month">Mois</button>
+          </div>
+          <div class="cal-month-nav">
+            <button onclick="shiftRange(-1)">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <span class="month-label" id="calMonthLabel"></span>
+            <button onclick="shiftRange(1)">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
+          <div class="metric-tabs">
+            <button data-metric="deficit" class="selected">Déficit</button>
+            <button data-metric="protein">Protéines</button>
+            <button data-metric="weight">Poids</button>
+          </div>
+          <div class="chart-wrap">
+            <svg id="trendChart" viewBox="0 0 300 150" preserveAspectRatio="none"></svg>
+            <div class="chart-labels" id="chartLabels"></div>
+          </div>
+        </div>
+        <div class="card" id="chartSummary"></div>
+      </div>
+    </section>
+
+    <!-- PRIERE -->
+    <section class="page" id="page-prayer">
+      <div class="card">
+        <h2>Prières du jour</h2>
+        <div class="stepper">
+          <button onclick="changePrayers(-1)">–</button>
+          <div class="count"><span id="prayerCount">0</span><div class="goal">/ 5</div></div>
+          <button onclick="changePrayers(1)">+</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Ce mois-ci</h2>
+        <div class="cal-grid" id="prayerCalGrid"></div>
+      </div>
+    </section>
+
+    <!-- NEWS -->
+    <section class="page" id="page-news">
+      <div class="card">
+        <h2>Aujourd'hui</h2>
+        <div class="check-item" id="check-hd" onclick="toggleNews('hd')">
+          <div class="check-box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></div>
+          <div><div class="txt">Les Actus du Jour</div><div class="sub">Hugo Décrypte</div></div>
+        </div>
+        <div class="check-item" id="check-ft" onclick="toggleNews('ft')">
+          <div class="check-box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></div>
+          <div><div class="txt">Brief FT</div><div class="sub">Financial Times</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Ce mois-ci</h2>
+        <div class="cal-grid" id="newsCalGrid"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottom">
+    <button data-page="home" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11.5l8.5-8 8.5 8"/><path d="M5.5 10.5v9h5v-6h3v6h5v-9"/></svg>
+      Accueil
+    </button>
+    <button data-page="health">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg>
+      Santé
+    </button>
+    <button data-page="prayer">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3.5a8 8 0 100 17 6.3 6.3 0 010-17z"/></svg>
+      Prière
+    </button>
+    <button data-page="news">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="13" height="14" rx="1.2"/><path d="M16.5 8h4v8.5a2.2 2.2 0 01-2.2 2.2H16.5"/><path d="M6.5 9h7M6.5 12h7M6.5 15h4.5"/></svg>
+      News
+    </button>
+  </nav>
+
+  <div class="modal-backdrop" id="dayModal">
+    <div class="modal">
+      <h3 id="modalTitle">Jour</h3>
+      <div id="modalBody"></div>
+      <button class="close" onclick="closeModal()">Fermer</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ---------- Storage helpers ---------- */
+function loadProfile(){
+  try{ return JSON.parse(localStorage.getItem('profile')) || {}; }catch(e){ return {}; }
+}
+function saveProfileData(p){ localStorage.setItem('profile', JSON.stringify(p)); }
+function loadDays(){
+  try{ return JSON.parse(localStorage.getItem('days')) || {}; }catch(e){ return {}; }
+}
+function saveDays(d){ localStorage.setItem('days', JSON.stringify(d)); }
+function dateKey(y,mo,d){ return new Date(y,mo,d).toISOString().slice(0,10); }
+function dateKeyFromDate(d){ return d.toISOString().slice(0,10); }
+function todayKey(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+function fmtDateHuman(d){
+  return d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+}
+
+let state = { profile: loadProfile(), days: loadDays(), sex: null, calMonth: new Date(), calWeekStart: new Date(), selectedSub: 'today', chartMetric: 'deficit', chartRange: 'week' };
+state.sex = state.profile.sex || null;
+
+/* ---------- BMR / calculs ---------- */
+function computeBMR(p){
+  if(!p.weight || !p.height || !p.age || !p.sex) return null;
+  const base = 10*p.weight + 6.25*p.height - 5*p.age;
+  return p.sex === 'H' ? Math.round(base+5) : Math.round(base-161);
+}
+function computeDayDeficit(entry, bmr){
+  if(!entry || !entry.caloriesIn || !bmr) return null;
+  return bmr + (entry.caloriesBurned||0) - entry.caloriesIn;
+}
+
+/* ---------- Navigation ---------- */
+function goTo(page, sub){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('nav.bottom button').forEach(b=>b.classList.toggle('active', b.dataset.page===page));
+  const titles = {home:['Accueil','Aujourd\u2019hui'], health:['Santé','Corps & énergie'], prayer:['Prière','Cinq temps'], news:['News','Rester informé']};
+  document.getElementById('pageEyebrow').textContent = titles[page][0];
+  document.getElementById('pageTitle').textContent = titles[page][1];
+  if(page==='health' && sub) selectSub(sub);
+  renderAll();
+}
+document.querySelectorAll('nav.bottom button').forEach(btn=>{
+  btn.addEventListener('click', ()=>goTo(btn.dataset.page));
+});
+document.querySelectorAll('.subnav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>selectSub(btn.dataset.sub));
+});
+document.querySelectorAll('.metric-tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    state.chartMetric = btn.dataset.metric;
+    document.querySelectorAll('.metric-tabs button').forEach(b=>b.classList.toggle('selected', b.dataset.metric===state.chartMetric));
+    renderTrendChart();
+  });
+});
+document.querySelectorAll('.range-tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    state.chartRange = btn.dataset.range;
+    document.querySelectorAll('.range-tabs button').forEach(b=>b.classList.toggle('selected', b.dataset.range===state.chartRange));
+    renderTrendChart();
+  });
+});
+function selectSub(sub){
+  state.selectedSub = sub;
+  document.querySelectorAll('.subnav button').forEach(b=>b.classList.toggle('selected', b.dataset.sub===sub));
+  ['today','profile','calendar'].forEach(s=>{
+    document.getElementById('health-'+s).style.display = (s===sub)?'block':'none';
+  });
+  if(sub==='calendar') renderTrendChart();
+}
+
+/* ---------- Profil ---------- */
+function setSex(sex){
+  state.sex = sex;
+  document.querySelectorAll('.sex-toggle button').forEach(b=>b.classList.toggle('selected', b.dataset.sex===sex));
+}
+function fillProfileForm(){
+  const p = state.profile;
+  document.getElementById('p_weight').value = p.weight || '';
+  document.getElementById('p_height').value = p.height || '';
+  document.getElementById('p_age').value = p.age || '';
+  document.getElementById('p_deficitGoal').value = p.deficitGoal || '';
+  document.getElementById('p_proteinGoal').value = p.proteinGoal || '';
+  if(p.sex) setSex(p.sex);
+}
+function saveProfile(){
+  const p = {
+    weight: parseFloat(document.getElementById('p_weight').value)||null,
+    height: parseFloat(document.getElementById('p_height').value)||null,
+    age: parseInt(document.getElementById('p_age').value)||null,
+    sex: state.sex,
+    deficitGoal: parseFloat(document.getElementById('p_deficitGoal').value)||0,
+    proteinGoal: parseFloat(document.getElementById('p_proteinGoal').value)||0,
+  };
+  state.profile = p;
+  saveProfileData(p);
+  renderAll();
+  selectSub('today');
+}
+
+/* ---------- Saisie du jour ---------- */
+function fillTodayForm(){
+  const d = state.days[todayKey()] || {};
+  document.getElementById('in_caloriesIn').value = d.caloriesIn ?? '';
+  document.getElementById('in_caloriesBurned').value = d.caloriesBurned ?? '';
+  document.getElementById('in_protein').value = d.protein ?? '';
+  document.getElementById('in_weight').value = d.weight ?? '';
+}
+function saveToday(){
+  const key = todayKey();
+  const entry = state.days[key] || {};
+  const ci = parseFloat(document.getElementById('in_caloriesIn').value);
+  entry.caloriesIn = isNaN(ci) ? null : ci;
+  const cb = parseFloat(document.getElementById('in_caloriesBurned').value);
+  entry.caloriesBurned = isNaN(cb) ? 0 : cb;
+  const pr = parseFloat(document.getElementById('in_protein').value);
+  entry.protein = isNaN(pr) ? null : pr;
+  const w = parseFloat(document.getElementById('in_weight').value);
+  entry.weight = isNaN(w) ? null : w;
+  state.days[key] = entry;
+  saveDays(state.days);
+  renderAll();
+}
+
+/* ---------- Prière ---------- */
+function changePrayers(delta){
+  const key = todayKey();
+  const entry = state.days[key] || {};
+  entry.prayers = Math.min(5, Math.max(0, (entry.prayers||0) + delta));
+  state.days[key] = entry;
+  saveDays(state.days);
+  renderAll();
+}
+
+/* ---------- News ---------- */
+function toggleNews(which){
+  const key = todayKey();
+  const entry = state.days[key] || {};
+  const field = which==='hd' ? 'newsHD' : 'newsFT';
+  entry[field] = !entry[field];
+  state.days[key] = entry;
+  saveDays(state.days);
+  renderAll();
+}
+
+/* ---------- Rendu global ---------- */
+function renderAll(){
+  document.getElementById('topDate').textContent = fmtDateHuman(new Date());
+  const p = state.profile;
+  const bmr = computeBMR(p);
+  const key = todayKey();
+  const d = state.days[key] || {};
+
+  fillProfileForm();
+  fillTodayForm();
+
+  const totalBurn = bmr ? bmr + (d.caloriesBurned||0) : null;
+  document.getElementById('calcTotalBurn').textContent = totalBurn ? totalBurn + ' kcal' : '—';
+  let deficit = computeDayDeficit(d, bmr);
+  const deficitGoal = p.deficitGoal || 0;
+  const deficitEl = document.getElementById('calcDeficit');
+  if(deficit !== null){
+    deficitEl.textContent = (deficit>=0?'+':'') + Math.round(deficit) + ' kcal / ' + (deficitGoal ? '-'+deficitGoal+' kcal' : '—');
+    deficitEl.className = 'value ' + (deficit >= deficitGoal ? 'good' : 'bad');
+  } else { deficitEl.textContent = '— / ' + (deficitGoal ? '-'+deficitGoal+' kcal' : '—'); deficitEl.className='value'; }
+
+  const protEl = document.getElementById('calcProtein');
+  if(d.protein && p.proteinGoal){
+    protEl.textContent = d.protein + ' g / ' + p.proteinGoal + ' g';
+    protEl.className = 'value ' + (d.protein >= p.proteinGoal ? 'good' : 'bad');
+  } else { protEl.textContent = (d.protein ? d.protein+' g' : '—') + ' / ' + (p.proteinGoal ? p.proteinGoal+' g' : '—'); protEl.className='value'; }
+
+  const homeDeficitEl = document.getElementById('homeDeficit');
+  homeDeficitEl.textContent = deficit!==null ? (deficit>=0?'+':'')+Math.round(deficit)+' kcal' : '—';
+
+  const homeProteinEl = document.getElementById('homeProtein');
+  homeProteinEl.textContent = d.protein ? d.protein+' g' : '—';
+
+  const newsCount = (d.newsHD?1:0)+(d.newsFT?1:0);
+  document.getElementById('homeHint').style.display = (p.weight && p.height && p.age && p.sex) ? 'none' : 'block';
+
+  document.getElementById('prayerCount').textContent = d.prayers || 0;
+
+  document.getElementById('check-hd').classList.toggle('done', !!d.newsHD);
+  document.getElementById('check-ft').classList.toggle('done', !!d.newsFT);
+
+  drawDualRing(deficit, deficitGoal, d.protein||0, p.proteinGoal||0);
+  drawBadgeRing('prayerRing', d.prayers||0, 5, 'var(--magenta)');
+  drawBadgeRing('newsRing', newsCount, 2, 'var(--accent-2)');
+  renderMiniCal('prayerCalGrid', dayEntry => (dayEntry && dayEntry.prayers>=5));
+  renderMiniCal('newsCalGrid', dayEntry => (dayEntry && dayEntry.newsHD && dayEntry.newsFT));
+}
+
+/* ---------- Anneaux de l'accueil ---------- */
+function drawDualRing(deficit, deficitGoal, protein, proteinGoal){
+  const svg = document.getElementById('healthDualRing');
+  const cx=70, cy=70, outerR=58, innerR=42, sw=11;
+  const outerPct = deficitGoal ? Math.max(0,Math.min(1,(deficit||0)/deficitGoal)) : 0;
+  const innerPct = proteinGoal ? Math.max(0,Math.min(1,(protein||0)/proteinGoal)) : 0;
+  const outerCirc = 2*Math.PI*outerR, innerCirc = 2*Math.PI*innerR;
+  let html = `<circle cx="${cx}" cy="${cy}" r="${outerR}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="${sw}"/>`;
+  html += `<circle cx="${cx}" cy="${cy}" r="${outerR}" fill="none" stroke="var(--accent)" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${outerPct*outerCirc} ${outerCirc}" transform="rotate(-90 ${cx} ${cy})"/>`;
+  html += `<circle cx="${cx}" cy="${cy}" r="${innerR}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="${sw}"/>`;
+  html += `<circle cx="${cx}" cy="${cy}" r="${innerR}" fill="none" stroke="var(--cyan)" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${innerPct*innerCirc} ${innerCirc}" transform="rotate(-90 ${cx} ${cy})"/>`;
+  svg.innerHTML = html;
+}
+function drawBadgeRing(svgId, value, max, color){
+  const svg = document.getElementById(svgId);
+  const cx=60, cy=60, r=48, sw=12;
+  const circ = 2*Math.PI*r;
+  const pct = max ? Math.min(1, value/max) : 0;
+  const dash = pct*circ;
+  let html = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="${sw}"/>`;
+  html += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${dash} ${circ}" transform="rotate(-90 ${cx} ${cy})"/>`;
+  html += `<text x="${cx}" y="${cy+8}" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="24" fill="var(--ink)">${value}/${max}</text>`;
+  svg.innerHTML = html;
+}
+
+/* ---------- Calendrier santé : vue semaine / mois ---------- */
+function getWeekStart(d){
+  const day = (d.getDay()+6)%7; // 0 = lundi
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()-day);
+}
+function getRangeDates(){
+  if(state.chartRange==='week'){
+    const start = getWeekStart(state.calWeekStart);
+    return Array.from({length:7}, (_,i)=> new Date(start.getFullYear(), start.getMonth(), start.getDate()+i));
+  } else {
+    const m = state.calMonth;
+    const daysInMonth = new Date(m.getFullYear(), m.getMonth()+1, 0).getDate();
+    return Array.from({length:daysInMonth}, (_,i)=> new Date(m.getFullYear(), m.getMonth(), i+1));
+  }
+}
+function getRangeLabel(dates){
+  if(state.chartRange==='week'){
+    const start = dates[0], end = dates[6];
+    const sameMonth = start.getMonth()===end.getMonth();
+    const startStr = start.getDate() + (sameMonth ? '' : ' '+start.toLocaleDateString('fr-FR',{month:'short'}));
+    const endStr = end.getDate()+' '+end.toLocaleDateString('fr-FR',{month:'short'});
+    return `${startStr} – ${endStr}`;
+  }
+  return state.calMonth.toLocaleDateString('fr-FR',{month:'long', year:'numeric'});
+}
+function shiftRange(delta){
+  if(state.chartRange==='week'){
+    const s = getWeekStart(state.calWeekStart);
+    s.setDate(s.getDate()+7*delta);
+    state.calWeekStart = s;
+  } else {
+    state.calMonth.setMonth(state.calMonth.getMonth()+delta);
+  }
+  renderTrendChart();
+}
+function renderTrendChart(){
+  const metric = state.chartMetric;
+  const dates = getRangeDates();
+  const n = dates.length;
+  document.getElementById('calMonthLabel').textContent = getRangeLabel(dates);
+  const bmr = computeBMR(state.profile);
+  const p = state.profile;
+  const chartW = 300;
+  const stepW = chartW/n;
+  const barW = Math.max(4, Math.min(20, stepW*0.5));
+  const svg = document.getElementById('trendChart');
+  svg.setAttribute('viewBox', `0 0 ${chartW} 150`);
+  let html = '';
+
+  if(metric==='deficit' || metric==='protein'){
+    let values = dates.map(dt=>{
+      const entry = state.days[dateKeyFromDate(dt)];
+      return metric==='deficit' ? computeDayDeficit(entry,bmr) : (entry && entry.protein ? entry.protein : null);
+    });
+    const goal = metric==='deficit' ? (p.deficitGoal||0) : (p.proteinGoal||0);
+    if(metric==='deficit'){
+      const maxAbs = Math.max(50, ...values.filter(v=>v!==null).map(v=>Math.abs(v)), Math.abs(goal)||0);
+      const midY = 75, halfH = 58;
+      const goalY = midY - (goal/maxAbs)*halfH;
+      html += `<line x1="0" y1="${midY}" x2="${chartW}" y2="${midY}" stroke="var(--border)" stroke-width="1"/>`;
+      html += `<line x1="0" y1="${goalY}" x2="${chartW}" y2="${goalY}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 3" opacity="0.55"/>`;
+      values.forEach((v,i)=>{
+        if(v===null) return;
+        const x = i*stepW + stepW/2 - barW/2;
+        const h = (v/maxAbs)*halfH;
+        const y = v>=0 ? midY-h : midY;
+        const barH = Math.max(2, Math.abs(h));
+        const color = v>=goal ? 'var(--good)' : 'var(--bad)';
+        html += `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="2" fill="${color}" data-key="${dateKeyFromDate(dates[i])}" class="bar"/>`;
+      });
+    } else {
+      const maxVal = Math.max(10, ...values.filter(v=>v!==null), goal||0);
+      const baseline = 138;
+      const goalY = baseline - (goal/maxVal)*122;
+      html += `<line x1="0" y1="${baseline}" x2="${chartW}" y2="${baseline}" stroke="var(--border)" stroke-width="1"/>`;
+      html += `<line x1="0" y1="${goalY}" x2="${chartW}" y2="${goalY}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 3" opacity="0.55"/>`;
+      values.forEach((v,i)=>{
+        if(v===null) return;
+        const x = i*stepW + stepW/2 - barW/2;
+        const h = Math.max(2, (v/maxVal)*122);
+        const color = v>=goal ? 'var(--good)' : 'var(--bad)';
+        html += `<rect x="${x}" y="${baseline-h}" width="${barW}" height="${h}" rx="2" fill="${color}" data-key="${dateKeyFromDate(dates[i])}" class="bar"/>`;
+      });
+    }
+  } else {
+    let points = [];
+    dates.forEach((dt,i)=>{
+      const entry = state.days[dateKeyFromDate(dt)];
+      if(entry && entry.weight) points.push({i, val:entry.weight, key:dateKeyFromDate(dt)});
+    });
+    if(points.length){
+      const vals = points.map(pt=>pt.val);
+      const minV = Math.min(...vals)-0.5, maxV = Math.max(...vals)+0.5;
+      const range = (maxV-minV)||1;
+      const coords = points.map(pt=>({
+        x: pt.i*stepW + stepW/2,
+        y: 138 - ((pt.val-minV)/range)*122,
+        key: pt.key
+      }));
+      const linePath = coords.map((c,i)=>(i===0?'M':'L')+c.x+' '+c.y).join(' ');
+      html += `<path d="${linePath}" fill="none" stroke="var(--accent)" stroke-width="2"/>`;
+      coords.forEach(c=>{
+        html += `<circle cx="${c.x}" cy="${c.y}" r="4" fill="var(--accent)" data-key="${c.key}" class="bar"/>`;
+      });
+    } else {
+      html += `<text x="${chartW/2}" y="75" text-anchor="middle" fill="var(--muted)" font-size="11">Pas encore de pesée</text>`;
+    }
+  }
+  svg.innerHTML = html;
+  svg.querySelectorAll('.bar').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const key = el.dataset.key;
+      openDayModal(key, state.days[key]);
+    });
+  });
+
+  const labelsEl = document.getElementById('chartLabels');
+  let labelsHtml = '';
+  if(state.chartRange==='week'){
+    const dow = ['L','M','M','J','V','S','D'];
+    dates.forEach((dt,i)=>{
+      const left = (i*stepW + stepW/2)/chartW*100;
+      labelsHtml += `<span style="left:${left}%">${dow[i]}</span>`;
+    });
+  } else {
+    for(let i=0; i<n; i+=5){
+      const left = (i*stepW + stepW/2)/chartW*100;
+      labelsHtml += `<span style="left:${left}%">${dates[i].getDate()}</span>`;
+    }
+  }
+  labelsEl.innerHTML = labelsHtml;
+
+  renderChartSummary(metric, dates, bmr);
+}
+function renderChartSummary(metric, dates, bmr){
+  const p = state.profile;
+  const box = document.getElementById('chartSummary');
+  const periodLabel = state.chartRange==='week' ? 'de la semaine' : 'du mois';
+  if(metric==='deficit' || metric==='protein'){
+    let vals=[];
+    dates.forEach(dt=>{
+      const entry = state.days[dateKeyFromDate(dt)];
+      const v = metric==='deficit' ? computeDayDeficit(entry,bmr) : (entry && entry.protein ? entry.protein : null);
+      if(v!==null) vals.push(v);
+    });
+    const avg = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+    const unit = metric==='deficit' ? ' kcal' : ' g';
+    box.innerHTML = `
+      <div class="stat-line"><span class="label">Moyenne ${periodLabel}</span><span class="value">${avg!==null ? (metric==='deficit'&&avg>=0?'+':'')+avg+unit : '—'}</span></div>
+    `;
+  } else {
+    let points = [];
+    dates.forEach(dt=>{
+      const entry = state.days[dateKeyFromDate(dt)];
+      if(entry && entry.weight) points.push(entry.weight);
+    });
+    if(points.length){
+      const last = points[points.length-1];
+      const delta = points.length>1 ? (last-points[0]) : 0;
+      box.innerHTML = `
+        <div class="stat-line"><span class="label">Dernier poids renseigné</span><span class="value">${last} kg</span></div>
+        <div class="stat-line"><span class="label">Variation ${periodLabel}</span><span class="value ${delta<=0?'good':'bad'}">${delta>=0?'+':''}${delta.toFixed(1)} kg</span></div>
+      `;
+    } else {
+      box.innerHTML = `<p class="empty-hint">Pas encore de pesée ${periodLabel}.</p>`;
+    }
+  }
+}
+function openDayModal(key, entry){
+  const modal = document.getElementById('dayModal');
+  const d = new Date(key+'T00:00:00');
+  document.getElementById('modalTitle').textContent = d.toLocaleDateString('fr-FR',{weekday:'long', day:'numeric', month:'long'});
+  if(!entry){
+    document.getElementById('modalBody').innerHTML = '<p class="empty-hint">Aucune donnée pour ce jour.</p>';
+  } else {
+    const p = state.profile;
+    const bmr = computeBMR(p);
+    let deficitLine = '—';
+    const dv = computeDayDeficit(entry, bmr);
+    if(dv!==null){ deficitLine = (dv>=0?'+':'') + Math.round(dv) + ' kcal'; }
+    document.getElementById('modalBody').innerHTML = `
+      <div class="stat-line"><span class="label">Déficit</span><span class="value">${deficitLine}</span></div>
+      <div class="stat-line"><span class="label">Protéines</span><span class="value">${entry.protein ? entry.protein+' g' : '—'}</span></div>
+      <div class="stat-line"><span class="label">Poids</span><span class="value">${entry.weight ? entry.weight+' kg' : '—'}</span></div>
+      <div class="stat-line"><span class="label">Prières</span><span class="value">${entry.prayers ?? 0} / 5</span></div>
+      <div class="stat-line"><span class="label">News</span><span class="value">${(entry.newsHD?1:0)+(entry.newsFT?1:0)} / 2</span></div>
+    `;
+  }
+  modal.classList.add('open');
+}
+function closeModal(){ document.getElementById('dayModal').classList.remove('open'); }
+
+/* ---------- Mini calendriers prière / news ---------- */
+function renderMiniCal(elId, isGoodFn){
+  const grid = document.getElementById(elId);
+  grid.innerHTML = '';
+  const m = new Date();
+  const first = new Date(m.getFullYear(), m.getMonth(), 1);
+  const startOffset = (first.getDay()+6)%7;
+  const daysInMonth = new Date(m.getFullYear(), m.getMonth()+1, 0).getDate();
+  ['L','M','M','J','V','S','D'].forEach(d=>{
+    const el = document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el);
+  });
+  for(let i=0;i<startOffset;i++){
+    const el = document.createElement('div'); el.className='cal-day empty'; grid.appendChild(el);
+  }
+  for(let day=1; day<=daysInMonth; day++){
+    const dateObj = new Date(m.getFullYear(), m.getMonth(), day);
+    const key = dateObj.toISOString().slice(0,10);
+    const entry = state.days[key];
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    el.textContent = day;
+    if(key === todayKey()) el.classList.add('today');
+    if(entry){
+      el.classList.add('filled');
+      el.classList.add(isGoodFn(entry) ? 'good' : 'bad');
+    }
+    grid.appendChild(el);
+  }
+}
+
+/* ---------- Init ---------- */
+selectSub('today');
+renderAll();
+</script>
+</body>
+</html>
